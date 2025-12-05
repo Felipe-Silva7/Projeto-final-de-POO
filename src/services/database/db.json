@@ -1,0 +1,23 @@
+{
+  "usuarios": [
+    {
+      "id": {
+        "nome": "123",
+        "idade": 23,
+        "peso": 1,
+        "altura": 1,
+        "objetivo": "1",
+        "limitacoes": [
+          "1"
+        ],
+        "restricoes": [
+          "1"
+        ]
+      },
+      "idade": 0,
+      "altura": 0,
+      "limitacoes": [],
+      "refeicoes": []
+    }
+  ]
+}

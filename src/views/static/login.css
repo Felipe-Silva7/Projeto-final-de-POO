@@ -1,0 +1,127 @@
+/* Resetando estilos padrões do navegador */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* Corpo da página */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #F5F5F5; /* Cor de fundo suave */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+
+/* Container da tela de login */
+.login-container {
+  background-color: #A3D9A5; /* Verde Lima suave */
+  padding: 40px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+
+/* Título */
+.title {
+  color: #3A5A40; /* Verde escuro */
+  font-size: 36px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Subtítulo */
+.subtitle {
+  color: #3A5A40;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+
+/* Wrapper dos campos de entrada (input) */
+.input-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+
+/* Estilo dos inputs */
+.input-field {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #3A5A40; /* Verde escuro */
+  placeholder: #3A5A40;
+  padding-left: 40px; /* Espaço para o ícone */
+}
+
+
+/* Estilo do ícone nos inputs */
+.icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3A5A40; /* Verde escuro */
+}
+
+
+/* Botão de login */
+.login-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #3A5A40; /* Verde escuro */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+
+/* Efeito de hover no botão */
+.login-button:hover {
+  background-color: #2F4A31; /* Verde mais escuro */
+}
+
+
+/* Link "Esqueceu a senha?" */
+.forgot-password a {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #3A5A40;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+
+.forgot-password a:hover {
+  color: #2F4A31; /* Verde mais escuro */
+}
+
+
+/* Estilo das labels (frases acima dos campos) */
+label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3A5A40; /* Verde escuro */
+  margin-bottom: 8px;
+  text-align: left;
+  display: block;
+}

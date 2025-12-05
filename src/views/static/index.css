@@ -1,0 +1,192 @@
+/* Folha sendo levada pelo vento */
+@keyframes wind-leaf {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    25% {
+        transform: translate(6px, -2px) rotate(8deg);
+    }
+
+    50% {
+        transform: translate(12px, 1px) rotate(-6deg);
+    }
+
+    75% {
+        transform: translate(18px, -1px) rotate(10deg);
+    }
+
+    100% {
+        transform: translate(24px, 2px) rotate(-4deg);
+        opacity: 0.8;
+    }
+}
+
+.wind-leaf {
+    animation: wind-leaf 2s ease-in-out infinite alternate;
+}
+
+/* Import da fonte acessível, bonita e boa para leitores de todas as idades */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #A3D9A5; /* verde lima suave para o fundo */
+  color: #3A5A40; /* verde escuro para a fonte */
+  line-height: 1.6;
+}
+
+
+/* Container principal */
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+
+/* Cabeçalho */
+.header {
+  text-align: center;
+  background-color: white;
+  padding: 15px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+
+.header p {
+  font-size: 1rem;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+
+/* Grid do menu */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+
+/* Cards do menu (botões grandes clicáveis) */
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #3A5A40;
+  color: white;
+  padding: 20px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+
+.menu-card:hover {
+  transform: translateY(-3px);
+  opacity: 0.9;
+}
+
+
+.icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 10px;
+  stroke-width: 2;
+  stroke: white;
+  fill: transparent;
+}
+
+
+.icon.small {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 6px;
+  stroke: #3A5A40;
+}
+
+
+/* Seção de dicas */
+.tip-section h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+
+.tip-card {
+  background-color: white;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  font-size: 1rem;
+}
+
+
+/* Resumo da rotina */
+.routine-summary h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+
+.summary-card {
+  background-color: white;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+
+.summary-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+
+.summary-card p {
+  font-size: 0.95rem;
+  margin: 5px 0 0;
+}
+
+
+/* Motivação no rodapé */
+.motivation {
+  text-align: center;
+  margin-top: 35px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #3A5A40;
+  background-color: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+
