@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">🍎 VivaBem</div>
+            <div class="nav-menu">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/registrar">Registrar Refeição</a>
+                <a href="/historico">Histórico</a>
+                <a href="/perfil" class="active">Perfil</a>
+                <button id="btnLogout" class="btn btn-secondary">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>👤 Meu Perfil</h1>
+            <p>Gerencie suas informações e acompanhe seu progresso</p>
+        </div>
+
+        <div class="perfil-grid">
+            <!-- Informações Pessoais -->
+            <div class="card">
+                <h2>📋 Informações Pessoais</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Nome</label>
+                        <p id="nome">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Email</label>
+                        <p id="email">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Idade</label>
+                        <p id="idade">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Tipo de Usuário</label>
+                        <p id="tipo">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Peso</label>
+                        <p id="peso">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Altura</label>
+                        <p id="altura">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>IMC</label>
+                        <p id="imc" class="imc-valor">-</p>
+                    </div>
+                    <div class="info-item full-width">
+                        <label>Restrições Alimentares</label>
+                        <p id="restricoes">Nenhuma</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card">
+                <h2>📊 Estatísticas</h2>
+                <div class="estatisticas-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon">🍽️</div>
+                        <div class="stat-content">
+                            <h3 id="totalRefeicoes">0</h3>
+                            <p>Total de Refeições</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-content">
+                            <h3 id="diasAtivos">0</h3>
+                            <p>Dias Ativos</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <h3 id="adequadas">0</h3>
+                            <p>Refeições Adequadas</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <h3 id="percentualAdequadas">0%</h3>
+                            <p>Taxa de Sucesso</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <h3 id="mediaPorDia">0</h3>
+                            <p>Média por Dia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendações Personalizadas -->
+        <div class="card">
+            <h2>💡 Suas Recomendações Personalizadas</h2>
+            <div id="recomendacoes" class="recomendacoes-perfil">
+                <p class="loading">Carregando recomendações...</p>
+            </div>
+        </div>
+
+        <!-- Análise Semanal -->
+        <div class="card">
+            <h2>📈 Análise Semanal</h2>
+            <div id="analiseSemanal">
+                <p class="loading">Carregando análise semanal...</p>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="perfil-actions">
+            <button id="btnEditar" class="btn btn-secondary" onclick="alert('Funcionalidade em desenvolvimento')">
+                ✏️ Editar Perfil
+            </button>
+            <button id="btnExportar" class="btn btn-secondary">
+                📥 Exportar Dados
+            </button>
+            <button id="btnLimpar" class="btn btn-danger">
+                🗑️ Limpar Dados
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        let usuarioLogado = null;
+
+        async function verificarLogin() {
+            try {
+                const response = await fetch('/api/usuarios/logado');
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    usuarioLogado = resultado.usuario;
+                    carregarPerfil();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (erro) {
+                console.error('Erro ao verificar login:', erro);
+                window.location.href = '/login';
+            }
+        }
+
+        async function carregarPerfil() {
+            try {
+                const response = await fetch(`/api/usuarios/perfil/${usuarioLogado.id}`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    const perfil = resultado.perfil;
+                    
+                    // Informações pessoais
+                    document.getElementById('nome').textContent = perfil.nome;
+                    document.getElementById('email').textContent = perfil.email;
+                    document.getElementById('idade').textContent = `${perfil.idade} anos`;
+                    
+                    const tipoTexto = {
+                        'comum': '🙂 Usuário Comum',
+                        'diabetico': '💉 Usuário Diabético',
+                        'atleta': '💪 Atleta (Hipertrofia)'
+                    };
+                    document.getElementById('tipo').textContent = tipoTexto[perfil.tipo] || perfil.tipo;
+                    
+                    document.getElementById('peso').textContent = `${perfil.peso} kg`;
+                    document.getElementById('altura').textContent = `${perfil.altura} m`;
+                    
+                    // IMC
+                    const imc = parseFloat(perfil.imc);
+                    const imcElement = document.getElementById('imc');
+                    imcElement.textContent = imc.toFixed(1);
+                    imcElement.className = 'imc-valor ' + classificarIMC(imc);
+                    
+                    // Restrições
+                    if (perfil.restricoes && perfil.restricoes.length > 0) {
+                        document.getElementById('restricoes').textContent = perfil.restricoes.join(', ');
+                    }
+
+                    // Estatísticas
+                    const stats = perfil.estatisticas;
+                    document.getElementById('totalRefeicoes').textContent = stats.totalRefeicoes;
+                    document.getElementById('diasAtivos').textContent = stats.diasAtivos;
+                    document.getElementById('adequadas').textContent = stats.adequadas || 0;
+                    document.getElementById('percentualAdequadas').textContent = `${stats.percentualAdequadas}%`;
+                    document.getElementById('mediaPorDia').textContent = stats.mediaPorDia;
+
+                    // Recomendações
+                    const recContainer = document.getElementById('recomendacoes');
+                    recContainer.innerHTML = `
+                        <ul class="recomendacoes-list">
+                            ${perfil.recomendacoes.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+
+                await carregarAnaliseSemanal();
+            } catch (erro) {
+                console.error('Erro ao carregar perfil:', erro);
+            }
+        }
+
+        function classificarIMC(imc) {
+            if (imc < 18.5) return 'baixo';
+            if (imc < 25) return 'normal';
+            if (imc < 30) return 'sobrepeso';
+            return 'obesidade';
+        }
+
+        async function carregarAnaliseSemanal() {
+            try {
+                const response = await fetch(`/api/analises/semanal/${usuarioLogado.id}`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    const container = document.getElementById('analiseSemanal');
+                    const resumo = resultado.resumoSemanal;
+
+                    container.innerHTML = `
+                        <div class="analise-semanal-grid">
+                            <div class="semana-stat">
+                                <h4>Índice Médio</h4>
+                                <div class="indice-grande">${resumo.indiceMedia}/100</div>
+                            </div>
+                            <div class="semana-stat">
+                                <h4>Refeições</h4>
+                                <p>${resumo.totalRefeicoes}</p>
+                            </div>
+                            <div class="semana-stat">
+                                <h4>Média/Dia</h4>
+                                <p>${resumo.mediaPorDia}</p>
+                            </div>
+                            <div class="semana-stat">
+                                <h4>Dias Ativos</h4>
+                                <p>${resumo.diasAtivos}/7</p>
+                            </div>
+                        </div>
+
+                        <div class="semana-detalhes">
+                            ${resultado.semana.map(dia => `
+                                <div class="dia-semana-item">
+                                    <div class="dia-label">
+                                        <span>${dia.diaSemana}</span>
+                                        <small>${dia.data}</small>
+                                    </div>
+                                    <div class="dia-barra">
+                                        <div class="barra-fill" style="width: ${dia.analise.indice}%"></div>
+                                    </div>
+                                    <div class="dia-valor">${dia.analise.indice}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar análise semanal:', erro);
+            }
+        }
+
+        document.getElementById('btnExportar').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`/api/refeicoes/usuario/${usuarioLogado.id}`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    const dados = {
+                        usuario: usuarioLogado,
+                        refeicoes: resultado.refeicoes,
+                        exportadoEm: new Date().toISOString()
+                    };
+
+                    const json = JSON.stringify(dados, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `vivabem_${usuarioLogado.nome}_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+
+                    alert('Dados exportados com sucesso!');
+                }
+            } catch (erro) {
+                console.error('Erro ao exportar:', erro);
+                alert('Erro ao exportar dados');
+            }
+        });
+
+        document.getElementById('btnLimpar').addEventListener('click', async () => {
+            const confirmacao = confirm(
+                '⚠️ ATENÇÃO: Esta ação irá excluir TODOS os seus dados permanentemente!\n\n' +
+                'Você tem certeza que deseja continuar?'
+            );
+
+            if (!confirmacao) return;
+
+            const confirmaFinal = confirm(
+                'Esta é sua última chance!\n\n' +
+                'Todos os seus registros de refeições serão perdidos para sempre.\n\n' +
+                'Deseja realmente continuar?'
+            );
+
+            if (confirmaFinal) {
+                try {
+                    const response = await fetch(`/api/usuarios/${usuarioLogado.id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('Conta excluída com sucesso');
+                        window.location.href = '/login';
+                    }
+                } catch (erro) {
+                    console.error('Erro ao excluir conta:', erro);
+                    alert('Erro ao excluir conta');
+                }
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/usuarios/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (erro) {
+                console.error('Erro ao fazer logout:', erro);
+            }
+        });
+
+        // Inicializa
+        verificarLogin();
+    </script>
+</body>
+</html>

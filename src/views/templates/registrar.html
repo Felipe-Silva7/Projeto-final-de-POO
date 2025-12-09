@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Refeição - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">🍎 VivaBem</div>
+            <div class="nav-menu">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/registrar" class="active">Registrar Refeição</a>
+                <a href="/historico">Histórico</a>
+                <a href="/perfil">Perfil</a>
+                <button id="btnLogout" class="btn btn-secondary">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🍽️ Registrar Nova Refeição</h1>
+            <p>Adicione os alimentos que você consumiu</p>
+        </div>
+
+        <div class="form-container">
+            <form id="formRefeicao">
+                <div class="card">
+                    <h2>Informações da Refeição</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipo">Tipo de Refeição *</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="café da manhã">☕ Café da Manhã</option>
+                                <option value="lanche da manhã">🥐 Lanche da Manhã</option>
+                                <option value="almoço">🍽️ Almoço</option>
+                                <option value="lanche da tarde">🍪 Lanche da Tarde</option>
+                                <option value="jantar">🌙 Jantar</option>
+                                <option value="ceia">🌜 Ceia</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="horario">Horário</label>
+                            <input 
+                                type="time" 
+                                id="horario" 
+                                name="horario"
+                            >
+                            <small>Deixe em branco para usar horário atual</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Alimentos</h2>
+                        <button type="button" id="btnAdicionarAlimento" class="btn btn-secondary">
+                            + Adicionar Alimento
+                        </button>
+                    </div>
+
+                    <div id="alimentosContainer">
+                        <div class="alimento-item">
+                            <div class="form-row">
+                                <div class="form-group flex-2">
+                                    <label>Nome do Alimento *</label>
+                                    <input 
+                                        type="text" 
+                                        class="alimento-nome" 
+                                        placeholder="Ex: Arroz, Feijão, Frango..."
+                                        required
+                                    >
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label>Quantidade *</label>
+                                    <input 
+                                        type="text" 
+                                        class="alimento-quantidade" 
+                                        placeholder="Ex: 200g, 1 xícara"
+                                        required
+                                    >
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-remover" disabled>
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="window.location.href='/dashboard'" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Registrar Refeição
+                    </button>
+                </div>
+
+                <div id="mensagem" class="message"></div>
+            </form>
+
+            <div id="resultadoAnalise" class="card resultado-analise" style="display: none;">
+                <h2>📊 Análise da Refeição</h2>
+                <div id="analiseConteudo"></div>
+                <button onclick="window.location.href='/dashboard'" class="btn btn-primary">
+                    Voltar ao Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let usuarioLogado = null;
+
+        async function verificarLogin() {
+            try {
+                const response = await fetch('/api/usuarios/logado');
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    usuarioLogado = resultado.usuario;
+                    configurarHorarioAtual();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (erro) {
+                console.error('Erro ao verificar login:', erro);
+                window.location.href = '/login';
+            }
+        }
+
+        function configurarHorarioAtual() {
+            const agora = new Date();
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            document.getElementById('horario').value = `${horas}:${minutos}`;
+        }
+
+        document.getElementById('btnAdicionarAlimento').addEventListener('click', () => {
+            const container = document.getElementById('alimentosContainer');
+            const novoAlimento = document.createElement('div');
+            novoAlimento.className = 'alimento-item';
+            novoAlimento.innerHTML = `
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Nome do Alimento *</label>
+                        <input 
+                            type="text" 
+                            class="alimento-nome" 
+                            placeholder="Ex: Arroz, Feijão, Frango..."
+                            required
+                        >
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Quantidade *</label>
+                        <input 
+                            type="text" 
+                            class="alimento-quantidade" 
+                            placeholder="Ex: 200g, 1 xícara"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-remover">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(novoAlimento);
+            atualizarBotoesRemover();
+        });
+
+        document.getElementById('alimentosContainer').addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-remover') || e.target.parentElement.classList.contains('btn-remover')) {
+                const item = e.target.closest('.alimento-item');
+                item.remove();
+                atualizarBotoesRemover();
+            }
+        });
+
+        function atualizarBotoesRemover() {
+            const items = document.querySelectorAll('.alimento-item');
+            items.forEach((item, index) => {
+                const btn = item.querySelector('.btn-remover');
+                btn.disabled = items.length === 1;
+            });
+        }
+
+        document.getElementById('formRefeicao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const mensagemDiv = document.getElementById('mensagem');
+            const tipo = document.getElementById('tipo').value;
+            const horario = document.getElementById('horario').value;
+
+            const alimentosItems = document.querySelectorAll('.alimento-item');
+            const alimentos = [];
+
+            alimentosItems.forEach(item => {
+                const nome = item.querySelector('.alimento-nome').value;
+                const quantidade = item.querySelector('.alimento-quantidade').value;
+                
+                if (nome && quantidade) {
+                    alimentos.push({ nome, quantidade });
+                }
+            });
+
+            if (alimentos.length === 0) {
+                mensagemDiv.textContent = 'Adicione pelo menos um alimento';
+                mensagemDiv.className = 'message error';
+                return;
+            }
+
+            const dados = {
+                tipo,
+                alimentos,
+                horario: horario || undefined
+            };
+
+            try {
+                const response = await fetch('/api/refeicoes/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    mensagemDiv.textContent = resultado.mensagem;
+                    mensagemDiv.className = 'message success';
+                    
+                    // Mostrar análise
+                    mostrarAnalise(resultado.analise);
+                    
+                    // Esconder o formulário
+                    document.getElementById('formRefeicao').style.display = 'none';
+                } else {
+                    mensagemDiv.textContent = resultado.mensagem;
+                    mensagemDiv.className = 'message error';
+                }
+            } catch (erro) {
+                mensagemDiv.textContent = 'Erro ao registrar refeição. Tente novamente.';
+                mensagemDiv.className = 'message error';
+                console.error('Erro:', erro);
+            }
+        });
+
+        function mostrarAnalise(analise) {
+            const container = document.getElementById('analiseConteudo');
+            const resultadoDiv = document.getElementById('resultadoAnalise');
+
+            const statusClass = {
+                'adequada': 'success',
+                'moderada': 'warning',
+                'inadequada': 'error'
+            };
+
+            container.innerHTML = `
+                <div class="analise-status status-${analise.status}">
+                    <h3 class="badge badge-${analise.status}">${analise.status.toUpperCase()}</h3>
+                    <p class="analise-mensagem">${analise.mensagem}</p>
+                </div>
+
+                ${analise.pontosPositivos && analise.pontosPositivos.length > 0 ? `
+                    <div class="pontos positivos">
+                        <strong>✅ Pontos Positivos:</strong>
+                        <ul>
+                            ${analise.pontosPositivos.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${analise.alertas && analise.alertas.length > 0 ? `
+                    <div class="pontos negativos">
+                        <strong>⚠️ Alertas:</strong>
+                        <ul>
+                            ${analise.alertas.map(a => `<li>${a}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+
+            resultadoDiv.style.display = 'block';
+            resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/usuarios/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (erro) {
+                console.error('Erro ao fazer logout:', erro);
+            }
+        });
+
+        // Inicializa
+        verificarLogin();
+    </script>
+</body>
+</html>

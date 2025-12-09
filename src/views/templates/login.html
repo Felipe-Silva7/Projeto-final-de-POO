@@ -1,68 +1,84 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VivaBem - Tela de Login</title>
-
-
-  <!-- Adicionando Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-
-  <!-- Adicionando FontAwesome via CDN -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
- 
-  <!-- Link para o arquivo CSS externo -->
-  <link rel="stylesheet" href="/login.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="logo">
+                <h1>🍎 VivaBem</h1>
+                <p>Sua jornada para uma alimentação saudável</p>
+            </div>
 
+            <form id="formLogin" class="auth-form">
+                <h2>Entrar</h2>
+                
+                <div class="form-group">
+                    <label for="credencial">Email ou Nome</label>
+                    <input 
+                        type="text" 
+                        id="credencial" 
+                        name="credencial" 
+                        placeholder="Digite seu email ou nome"
+                        required
+                    >
+                </div>
 
-  <!-- Container da tela de login -->
-  <div class="login-container">
+                <button type="submit" class="btn btn-primary">
+                    Entrar
+                </button>
 
+                <div id="mensagem" class="message"></div>
+            </form>
 
-    <!-- Título com ícone de folhas -->
-    <h1 class="title flex items-center justify-center">
-      VivaBem
-      <i class="fas fa-leaf ml-2 text-green-700"></i>
-    </h1>
-    <p class="subtitle">A sua saúde em primeiro lugar</p>
-
-
-    <form action="#" method="POST">
-
-
-      <!-- Frase acima do campo de Email -->
-      <label for="email" class="block text-left text-[#3A5A40] font-medium mb-2">Adicione seu email</label>
-      <!-- Campo de Email -->
-      <div class="input-wrapper">
-        <input id="email" type="email" name="email" placeholder="Email" class="input-field" required>
-        <i class="fas fa-envelope icon"></i>
-      </div>
-
-
-      <!-- Frase acima do campo de Senha -->
-      <label for="senha" class="block text-left text-[#3A5A40] font-medium mb-2">Adicione sua senha</label>
-      <!-- Campo de Senha -->
-      <div class="input-wrapper">
-        <input id="senha" type="password" name="senha" placeholder="Senha" class="input-field" required>
-        <i class="fas fa-lock icon"></i>
-      </div>
-
-
-      <!-- Botão de Login -->
-      <button type="submit" class="login-button">Entrar</button>
-    </form>
-
-
-    <!-- Link para "Esqueceu a Senha?" -->
-    <div class="forgot-password">
-      <a href="#">Esqueceu a senha?</a>
+            <div class="auth-footer">
+                <p>Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
+            </div>
+        </div>
     </div>
-  </div>
 
+    <script type="module">
+        const form = document.getElementById('formLogin');
+        const mensagemDiv = document.getElementById('mensagem');
 
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const credencial = document.getElementById('credencial').value;
+
+            try {
+                const response = await fetch('/api/usuarios/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ credencial })
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    mensagemDiv.textContent = resultado.mensagem;
+                    mensagemDiv.className = 'message success';
+                    
+                    // Redireciona para o dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    mensagemDiv.textContent = resultado.mensagem;
+                    mensagemDiv.className = 'message error';
+                }
+            } catch (erro) {
+                mensagemDiv.textContent = 'Erro ao fazer login. Tente novamente.';
+                mensagemDiv.className = 'message error';
+                console.error('Erro:', erro);
+            }
+        });
+    </script>
 </body>
 </html>

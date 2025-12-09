@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">🍎 VivaBem</div>
+            <div class="nav-menu">
+                <a href="/dashboard" class="active">Dashboard</a>
+                <a href="/registrar">Registrar Refeição</a>
+                <a href="/historico">Histórico</a>
+                <a href="/perfil">Perfil</a>
+                <button id="btnLogout" class="btn btn-secondary">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="welcome-section">
+                <h1>Olá, <span id="nomeUsuario"></span>! 👋</h1>
+                <p id="tipoUsuario"></p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <h3 id="indiceQualidade">--</h3>
+                        <p>Índice do Dia</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🍽️</div>
+                    <div class="stat-info">
+                        <h3 id="totalRefeicoes">0</h3>
+                        <p>Refeições Hoje</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3 id="refeicoesAdequadas">0</h3>
+                        <p>Adequadas</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <h3 id="diasAtivos">0</h3>
+                        <p>Dias Ativos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🍽️ Refeições de Hoje</h2>
+                        <a href="/registrar" class="btn btn-primary">+ Adicionar</a>
+                    </div>
+                    <div id="refeicoesHoje" class="refeicoes-list">
+                        <p class="empty-state">Nenhuma refeição registrada hoje</p>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="card">
+                        <h3>📈 Análise do Dia</h3>
+                        <div id="analiseDiaria">
+                            <p class="loading">Carregando análise...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>💡 Recomendações</h3>
+                        <div id="recomendacoes">
+                            <p class="loading">Carregando recomendações...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let usuarioLogado = null;
+
+        async function verificarLogin() {
+            try {
+                const response = await fetch('/api/usuarios/logado');
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    usuarioLogado = resultado.usuario;
+                    carregarDashboard();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (erro) {
+                console.error('Erro ao verificar login:', erro);
+                window.location.href = '/login';
+            }
+        }
+
+        async function carregarDashboard() {
+            document.getElementById('nomeUsuario').textContent = usuarioLogado.nome;
+            
+            const tipoTexto = {
+                'comum': '🙂 Usuário Comum',
+                'diabetico': '💉 Usuário Diabético',
+                'atleta': '💪 Atleta (Hipertrofia)'
+            };
+            document.getElementById('tipoUsuario').textContent = tipoTexto[usuarioLogado.tipo] || usuarioLogado.tipo;
+
+            await Promise.all([
+                carregarRefeicoesHoje(),
+                carregarAnaliseDiaria(),
+                carregarRecomendacoes(),
+                carregarEstatisticas()
+            ]);
+        }
+
+        async function carregarRefeicoesHoje() {
+            try {
+                const response = await fetch(`/api/refeicoes/usuario/${usuarioLogado.id}/hoje`);
+                const resultado = await response.json();
+
+                const container = document.getElementById('refeicoesHoje');
+                
+                if (resultado.refeicoes && resultado.refeicoes.length > 0) {
+                    container.innerHTML = resultado.refeicoes.map(refeicao => `
+                        <div class="refeicao-item status-${refeicao.analise?.status || 'pendente'}">
+                            <div class="refeicao-header">
+                                <strong>${refeicao.tipo}</strong>
+                                <span class="refeicao-horario">${refeicao.horario}</span>
+                            </div>
+                            <div class="refeicao-alimentos">
+                                ${refeicao.alimentos.map(a => `${a.nome} (${a.quantidade})`).join(', ')}
+                            </div>
+                            ${refeicao.analise ? `
+                                <div class="refeicao-status">
+                                    <span class="badge badge-${refeicao.analise.status}">${refeicao.analise.status}</span>
+                                    <p>${refeicao.analise.mensagem}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('totalRefeicoes').textContent = resultado.total;
+                } else {
+                    container.innerHTML = '<p class="empty-state">Nenhuma refeição registrada hoje. <a href="/registrar">Adicionar agora</a></p>';
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar refeições:', erro);
+            }
+        }
+
+        async function carregarAnaliseDiaria() {
+            try {
+                const response = await fetch(`/api/analises/diaria/${usuarioLogado.id}`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    const analise = resultado.analise;
+                    document.getElementById('indiceQualidade').textContent = `${analise.indice}/100`;
+                    
+                    const refAdequadas = analise.resumo?.adequadas || 0;
+                    document.getElementById('refeicoesAdequadas').textContent = refAdequadas;
+
+                    const container = document.getElementById('analiseDiaria');
+                    container.innerHTML = `
+                        <div class="analise-resumo">
+                            <div class="indice-bar">
+                                <div class="indice-fill" style="width: ${analise.indice}%"></div>
+                            </div>
+                            
+                            ${analise.pontosPositivos.length > 0 ? `
+                                <div class="pontos positivos">
+                                    <strong>✅ Pontos Positivos:</strong>
+                                    <ul>
+                                        ${analise.pontosPositivos.map(p => `<li>${p}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${analise.pontosNegativos.length > 0 ? `
+                                <div class="pontos negativos">
+                                    <strong>⚠️ Pontos a Melhorar:</strong>
+                                    <ul>
+                                        ${analise.pontosNegativos.map(p => `<li>${p}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            <p class="recomendacao-final"><strong>${analise.recomendacaoFinal}</strong></p>
+                        </div>
+                    `;
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar análise:', erro);
+            }
+        }
+
+        async function carregarRecomendacoes() {
+            try {
+                const response = await fetch(`/api/analises/recomendacoes/${usuarioLogado.id}`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    const container = document.getElementById('recomendacoes');
+                    const todasRecomendacoes = [
+                        ...resultado.recomendacoes.personalizadas,
+                        ...resultado.recomendacoes.baseadasNoComportamento
+                    ];
+
+                    container.innerHTML = `
+                        <ul class="recomendacoes-list">
+                            ${todasRecomendacoes.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar recomendações:', erro);
+            }
+        }
+
+        async function carregarEstatisticas() {
+            try {
+                const response = await fetch(`/api/refeicoes/usuario/${usuarioLogado.id}/estatisticas`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    document.getElementById('diasAtivos').textContent = resultado.estatisticas.diasAtivos;
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar estatísticas:', erro);
+            }
+        }
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/usuarios/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (erro) {
+                console.error('Erro ao fazer logout:', erro);
+            }
+        });
+
+        // Inicializa
+        verificarLogin();
+    </script>
+</body>
+</html>

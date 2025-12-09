@@ -1,2 +1,3 @@
 express
 nodemon
+node-localstorage

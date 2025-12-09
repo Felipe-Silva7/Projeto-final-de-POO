@@ -1,13 +1,21 @@
 {
-  "dependencies": {
-    "express": "^5.1.0"
-  },
+  "name": "vivabem",
+  "version": "1.0.0",
+  "description": "Plataforma de Acompanhamento e Sugestões Alimentares",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["alimentacao", "saude", "poo", "javascript"],
+  "author": "Seu Nome",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-localstorage": "^3.0.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
-  },
-  "type": "module" 
+    "nodemon": "^3.0.2"
+  }
 }

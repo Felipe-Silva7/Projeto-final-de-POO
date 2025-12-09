@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <div class="logo">
+                <h1>🍎 VivaBem</h1>
+                <p>Crie sua conta</p>
+            </div>
+
+            <form id="formCadastro" class="auth-form">
+                <h2>Cadastrar</h2>
+                
+                <div class="form-group">
+                    <label for="nome">Nome Completo *</label>
+                    <input 
+                        type="text" 
+                        id="nome" 
+                        name="nome" 
+                        placeholder="Seu nome"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="seu@email.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idade">Idade *</label>
+                        <input 
+                            type="number" 
+                            id="idade" 
+                            name="idade" 
+                            placeholder="25"
+                            min="1"
+                            max="120"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="peso">Peso (kg) *</label>
+                        <input 
+                            type="number" 
+                            id="peso" 
+                            name="peso" 
+                            placeholder="70"
+                            step="0.1"
+                            min="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="altura">Altura (m) *</label>
+                        <input 
+                            type="number" 
+                            id="altura" 
+                            name="altura" 
+                            placeholder="1.75"
+                            step="0.01"
+                            min="0.5"
+                            max="3"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">Tipo de Usuário *</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="comum">Comum - Alimentação equilibrada</option>
+                        <option value="diabetico">Diabético - Controle glicêmico</option>
+                        <option value="atleta">Atleta - Ganho de massa muscular</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="restricoes">Restrições Alimentares (opcional)</label>
+                    <input 
+                        type="text" 
+                        id="restricoes" 
+                        name="restricoes" 
+                        placeholder="Ex: lactose, glúten (separar por vírgula)"
+                    >
+                    <small>Deixe em branco se não tiver restrições</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Cadastrar
+                </button>
+
+                <div id="mensagem" class="message"></div>
+            </form>
+
+            <div class="auth-footer">
+                <p>Já tem uma conta? <a href="/login">Faça login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const form = document.getElementById('formCadastro');
+        const mensagemDiv = document.getElementById('mensagem');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const restricoesInput = document.getElementById('restricoes').value;
+            const restricoes = restricoesInput 
+                ? restricoesInput.split(',').map(r => r.trim()).filter(r => r)
+                : [];
+
+            const dados = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                idade: parseInt(document.getElementById('idade').value),
+                peso: parseFloat(document.getElementById('peso').value),
+                altura: parseFloat(document.getElementById('altura').value),
+                tipo: document.getElementById('tipo').value,
+                restricoes
+            };
+
+            try {
+                const response = await fetch('/api/usuarios/cadastrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    mensagemDiv.textContent = resultado.mensagem + ' Redirecionando...';
+                    mensagemDiv.className = 'message success';
+                    
+                    // Redireciona para o login
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    mensagemDiv.textContent = resultado.mensagem;
+                    mensagemDiv.className = 'message error';
+                }
+            } catch (erro) {
+                mensagemDiv.textContent = 'Erro ao cadastrar. Tente novamente.';
+                mensagemDiv.className = 'message error';
+                console.error('Erro:', erro);
+            }
+        });
+    </script>
+</body>
+</html>

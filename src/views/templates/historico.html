@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico - VivaBem</title>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">🍎 VivaBem</div>
+            <div class="nav-menu">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/registrar">Registrar Refeição</a>
+                <a href="/historico" class="active">Histórico</a>
+                <a href="/perfil">Perfil</a>
+                <button id="btnLogout" class="btn btn-secondary">Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📅 Histórico de Refeições</h1>
+            <p>Acompanhe sua evolução alimentar</p>
+        </div>
+
+        <div class="historico-filtros">
+            <div class="filtro-tabs">
+                <button class="tab-btn active" data-periodo="7">Últimos 7 dias</button>
+                <button class="tab-btn" data-periodo="30">Últimos 30 dias</button>
+                <button class="tab-btn" data-periodo="all">Todos</button>
+            </div>
+        </div>
+
+        <div id="historicoContainer" class="historico-container">
+            <p class="loading">Carregando histórico...</p>
+        </div>
+    </div>
+
+    <!-- Modal para detalhes do dia -->
+    <div id="modalDetalhes" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitulo">Detalhes do Dia</h2>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div id="modalConteudo" class="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let usuarioLogado = null;
+        let historicoCompleto = [];
+
+        async function verificarLogin() {
+            try {
+                const response = await fetch('/api/usuarios/logado');
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    usuarioLogado = resultado.usuario;
+                    carregarHistorico();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (erro) {
+                console.error('Erro ao verificar login:', erro);
+                window.location.href = '/login';
+            }
+        }
+
+        async function carregarHistorico() {
+            try {
+                const response = await fetch(`/api/refeicoes/usuario/${usuarioLogado.id}/historico?limite=90`);
+                const resultado = await response.json();
+
+                if (resultado.sucesso) {
+                    historicoCompleto = resultado.historico;
+                    exibirHistorico(7);
+                }
+            } catch (erro) {
+                console.error('Erro ao carregar histórico:', erro);
+                document.getElementById('historicoContainer').innerHTML = 
+                    '<p class="error">Erro ao carregar histórico. Tente novamente.</p>';
+            }
+        }
+
+        function exibirHistorico(diasLimite) {
+            const container = document.getElementById('historicoContainer');
+            
+            const historico = diasLimite === 'all' 
+                ? historicoCompleto 
+                : historicoCompleto.slice(0, diasLimite);
+
+            if (historico.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-large">
+                        <div class="empty-icon">📭</div>
+                        <h3>Nenhum registro encontrado</h3>
+                        <p>Comece a registrar suas refeições para ver seu histórico aqui!</p>
+                        <a href="/registrar" class="btn btn-primary">Registrar Primeira Refeição</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = historico.map(dia => {
+                const dataFormatada = formatarData(dia.data);
+                const indiceQualidade = calcularIndiceRapido(dia.resumo);
+                
+                return `
+                    <div class="historico-dia-card">
+                        <div class="dia-header">
+                            <div class="dia-info">
+                                <h3>${dataFormatada}</h3>
+                                <span class="badge">${dia.totalRefeicoes} refeições</span>
+                            </div>
+                            <div class="dia-indice">
+                                <div class="indice-circular">
+                                    <span class="indice-valor">${indiceQualidade}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dia-resumo">
+                            <div class="resumo-item success">
+                                <span class="resumo-icon">✅</span>
+                                <span>${dia.resumo.adequadas} adequadas</span>
+                            </div>
+                            <div class="resumo-item warning">
+                                <span class="resumo-icon">⚠️</span>
+                                <span>${dia.resumo.moderadas} moderadas</span>
+                            </div>
+                            <div class="resumo-item error">
+                                <span class="resumo-icon">❌</span>
+                                <span>${dia.resumo.inadequadas} inadequadas</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary btn-detalhes" onclick="verDetalhes('${dia.data}')">
+                            Ver Detalhes
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calcularIndiceRapido(resumo) {
+            if (resumo.total === 0) return 0;
+            return Math.round(
+                ((resumo.adequadas * 100) + (resumo.moderadas * 60) + (resumo.inadequadas * 20)) / resumo.total
+            );
+        }
+
+        function formatarData(dataStr) {
+            const data = new Date(dataStr + 'T00:00:00');
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const ontem = new Date(hoje);
+            ontem.setDate(ontem.getDate() - 1);
+
+            if (data.getTime() === hoje.getTime()) {
+                return 'Hoje';
+            } else if (data.getTime() === ontem.getTime()) {
+                return 'Ontem';
+            }
+
+            return data.toLocaleDateString('pt-BR', { 
+                weekday: 'long', 
+                day: '2-digit', 
+                month: 'long' 
+            });
+        }
+
+        window.verDetalhes = async function(data) {
+            const dia = historicoCompleto.find(d => d.data === data);
+            
+            if (!dia) return;
+
+            document.getElementById('modalTitulo').textContent = `Refeições de ${formatarData(data)}`;
+            
+            const conteudo = document.getElementById('modalConteudo');
+            conteudo.innerHTML = `
+                <div class="detalhes-dia">
+                    ${dia.refeicoes.map(refeicao => `
+                        <div class="refeicao-detalhe status-${refeicao.analise?.status || 'pendente'}">
+                            <div class="refeicao-header">
+                                <strong>${refeicao.tipo}</strong>
+                                <span class="badge badge-${refeicao.analise?.status || 'pendente'}">
+                                    ${refeicao.analise?.status || 'pendente'}
+                                </span>
+                                <span class="refeicao-horario">${refeicao.horario}</span>
+                            </div>
+                            
+                            <div class="refeicao-alimentos-lista">
+                                <strong>Alimentos:</strong>
+                                <ul>
+                                    ${refeicao.alimentos.map(a => 
+                                        `<li>${a.nome} - ${a.quantidade}</li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+
+                            ${refeicao.analise ? `
+                                <div class="refeicao-analise">
+                                    <p class="analise-mensagem">${refeicao.analise.mensagem}</p>
+                                    
+                                    ${refeicao.analise.pontosPositivos && refeicao.analise.pontosPositivos.length > 0 ? `
+                                        <div class="analise-pontos positivos">
+                                            <strong>✅ Pontos Positivos:</strong>
+                                            <ul>
+                                                ${refeicao.analise.pontosPositivos.map(p => `<li>${p}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${refeicao.analise.alertas && refeicao.analise.alertas.length > 0 ? `
+                                        <div class="analise-pontos negativos">
+                                            <strong>⚠️ Alertas:</strong>
+                                            <ul>
+                                                ${refeicao.analise.alertas.map(a => `<li>${a}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button class="btn btn-primary" onclick="fecharModal()">Fechar</button>
+            `;
+
+            document.getElementById('modalDetalhes').style.display = 'block';
+        }
+
+        window.fecharModal = function() {
+            document.getElementById('modalDetalhes').style.display = 'none';
+        }
+
+        // Filtros de período
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const periodo = btn.getAttribute('data-periodo');
+                exibirHistorico(periodo === 'all' ? 'all' : parseInt(periodo));
+            });
+        });
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalDetalhes');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        }
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/usuarios/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (erro) {
+                console.error('Erro ao fazer logout:', erro);
+            }
+        });
+
+        // Inicializa
+        verificarLogin();
+    </script>
+</body>
+</html>
