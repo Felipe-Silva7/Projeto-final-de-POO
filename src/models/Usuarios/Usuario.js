@@ -12,6 +12,9 @@ export class Usuario {
   #refeicoes;
 
   constructor(id, nome, email, idade, peso, altura, tipo, restricoes = []) {
+    if (this.constructor === Usuario) {
+      throw new Error("Classe Usuario é abstrata e não pode ser instanciada diretamente.");
+    }
     this.#id = id;
     this.#nome = nome;
     this.#email = email;
@@ -21,6 +24,7 @@ export class Usuario {
     this.#tipo = tipo;
     this.#restricoes = restricoes;
     this.#refeicoes = [];
+    
   }
 
   // Getters
