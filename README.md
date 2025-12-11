@@ -544,6 +544,41 @@ const resultado = analise.executarAnalise();
 // Internamente delega para o método polimórfico do usuário
 ```
 
+```javascript
+// Classe Usuario funciona como uma abstração de um "tipo de usuário"
+// Não pode ser instanciada diretamente (classe abstrata)
+export class Usuario {
+  #id;
+  #nome;
+  #email;
+  #idade;
+  #peso;
+  #altura;
+  #tipo;
+  #restricoes;
+  #refeicoes;
+
+  constructor(id, nome, email, idade, peso, altura, tipo, restricoes = []) {
+    // Garante que a classe só seja usada por subclasses
+    if (this.constructor === Usuario) {
+      throw new Error("Classe Usuario é abstrata e não pode ser instanciada diretamente.");
+    }
+
+    // Atributos encapsulados representam a estrutura comum a qualquer usuário
+    this.#id = id;
+    this.#nome = nome;
+    this.#email = email;
+    this.#idade = idade;
+    this.#peso = peso;
+    this.#altura = altura;
+    this.#tipo = tipo;
+    this.#restricoes = restricoes;
+    this.#refeicoes = []; // Cada usuário gerencia suas próprias refeições
+  }
+}
+
+```
+
 ---
 
 ## 🤝 Contribuindo
